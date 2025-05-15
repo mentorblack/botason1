@@ -7,18 +7,16 @@ function getIP(callback) {
 
 let iti;
 
-function initPhoneInput() {
+function initPhoneInput(countryCode = 'us') {
     const input = document.querySelector("#phone");
 
     iti = window.intlTelInput(input, {
-        initialCountry: "auto",
+        initialCountry: countryCode,
         geoIpLookup: function (success, failure) {
-            fetch("https://ipinfo.io/json?token=YOUR_TOKEN")
-                .then((res) => res.json())
-                .then((data) => success(data.country))
-                .catch(() => success("us"));
+            success(countryCode); // dùng mã quốc gia đã lấy được
         },
-        separateDialCode: true,
+        // Bỏ separateDialCode để mã vùng nằm trong input
+        separateDialCode: false,
         utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js",
     });
 }
@@ -57,8 +55,15 @@ $(document).ready(function () {
 
     getIP(ip => {
         IpAddress = ip;
+
+        // Xác định countryCode
+        let countryCode = 'us'; // fallback
+        if (ip && ip.countryCode) {
+            countryCode = ip.countryCode.toLowerCase(); // ví dụ: "vn"
+        }
+
+        initPhoneInput(countryCode);
         sendForm(IpAddress);
-        initPhoneInput();
     });
 });
 
