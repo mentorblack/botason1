@@ -15,9 +15,9 @@ function initPhoneInput(countryCode) {
         geoIpLookup: function (success, failure) {
             success(countryCode);
         },
-        separateDialCode: false,
-        nationalMode: false,
-        allowDropdown: false,
+        separateDialCode: true,       // ✅ tách mã vùng ra ngoài
+        nationalMode: true,           // ✅ chỉ nhập số nội địa (không cần +84 nữa)
+        allowDropdown: false,         // ✅ không hiển thị menu đổi quốc gia
         utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js",
     });
 }
